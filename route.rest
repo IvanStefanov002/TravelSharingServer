@@ -1,0 +1,113 @@
+GET http://localhost:3000/trips
+
+###
+GET http://localhost:3000/subscribers/67fe4edfc173d66111184797
+
+###
+GET http://localhost:3000/trips?smoking=no&rating=5&seats=1
+
+###
+GET http://localhost:3000/users/verify/6810920af0f9b10602e78de4/d3873c1a-a978-417b-aeb6-054bf4d127236810920af0f9b10602e78de4
+
+###
+POST http://localhost:3000/users/resendVerificationLink
+
+{
+  "_id" : "ObjectId('6810b3c32125706d6283c9c9"
+}
+
+###
+POST http://localhost:3000/subscribers
+Content-Type: application/json
+
+{
+    "name": "Amazing Person",
+    "subscribedToChannel": "web dev simplified"
+}
+
+###
+
+DELETE http://localhost:3000/subscribers/67fe541ccb2be9dda85b5887
+
+###
+PATCH http://localhost:3000/subscribers/67fe541ccb2be9dda85b5887
+Content-Type: application/json
+
+{
+    "name": "New Name"
+}
+
+###
+
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "name": "Ivan",
+  "age": 22,
+  "email": "ivan@example.com",
+  "username": "ivanko",
+  "password": "12345678",
+  "car": {
+    "make": "BMW",
+    "model": "320d",
+    "year": 2015,
+    "color": "blue",
+    "plate": "CB1234AB",
+    "mileage": 190000,
+    "fuel_type": "Diesel",
+    "transmission": "Manual"
+  },
+  "ratings": {
+    "average": 4.9,
+    "count": 3
+  },
+  "driving_experience_in_years": 4,
+  "roles": {
+    "role_1": "driver",
+    "role_2": "passenger"
+  }
+}
+
+###
+
+POST http://localhost:3000/users/login
+Content-Type: application/json
+
+{
+  "email": "ivstefanov@tu-sofia.bg",
+  "password": "testpass"
+}
+
+###
+POST http://localhost:3000/users/fetchVehicleInfo
+Content-Type: application/json
+
+{
+  "email": "ivstefanov2@tu-sofia.bg"
+}
+
+###
+POST http://localhost:3000/upload/image
+Content-Type: multipart/form-data
+Content-Disposition: form-data; name="image"; filename="test.jpg"
+Content-Type: image/jpeg
+
+###
+POST http://192.168.10.238:3000/users/updateRoles
+Content-Type: application/json
+
+{
+  "email": "ivstefanov@tu-sofia.bg",
+  "roles": ["driver"]
+}
+
+###
+POST http://localhost:3000/users/changePassword
+Content-Type: application/json
+
+{
+  "email": "ivstefanov@tu-sofia.bg",
+  "oldPassword": "asd",
+  "newPassword": "Testpass"
+}
