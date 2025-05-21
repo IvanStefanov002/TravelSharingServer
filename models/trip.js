@@ -2,15 +2,22 @@ const mongoose = require("mongoose");
 
 // Define the Trip schema
 const tripSchema = new mongoose.Schema({
-  vehicle_image: { type: String, required: true },
-  trip_description: { type: String, required: true },
+  created_on: { type: String },
   title: { type: String },
+  trip_description: { type: String, required: true },
+  vehicle_image: { type: String, required: true },
+  car: {
+    make: String,
+    model: String,
+    year: Number,
+    color: String,
+    plate: String,
+  },
   driver_id: { type: String, required: true },
   profile_image: { type: String },
   start_location: {
     city: { type: String, required: true },
     address: { type: String },
-    coordinates: { type: [Number], index: "2dsphere" }, // Using the '2dsphere' index for geospatial queries
   },
   departure_datetime: { type: String },
   available_seats: { type: Number, required: true },
@@ -19,7 +26,7 @@ const tripSchema = new mongoose.Schema({
     card: [{ type: String }],
     cash: [{ type: String }],
   },
-  is_pets_allowed: { type: String, enum: ["yes", "no", "any"], default: "any" }, // Added 'enum' for valid options
+  is_pets_allowed: { type: String, enum: ["yes", "no", "any"], default: "any" },
   is_allowed_smoking: {
     type: String,
     enum: ["yes", "no", "any"],
@@ -36,7 +43,6 @@ const tripSchema = new mongoose.Schema({
   end_location: {
     city: { type: String, required: true },
     address: { type: String },
-    coordinates: { type: [Number], index: "2dsphere" },
   },
 });
 

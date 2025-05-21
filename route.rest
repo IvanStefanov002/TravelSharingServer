@@ -111,3 +111,11 @@ Content-Type: application/json
   "oldPassword": "asd",
   "newPassword": "Testpass"
 }
+
+###
+POST http://localhost:3000/users/updateRatings
+Content-Type: application/json
+
+{
+
+}

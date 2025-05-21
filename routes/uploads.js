@@ -117,7 +117,8 @@ router.post("/uploadImage", upload.single("image"), async (req, res) => {
   }
 });
 
-router.post("/updateUser", async (req, res) => {
+/* update user's car image*/
+router.post("/updateUserCarImage", async (req, res) => {
   try {
     const { email, imageUrl } = req.body;
 
@@ -128,7 +129,38 @@ router.post("/updateUser", async (req, res) => {
     // Update user's car.image_url
     const updatedUser = await User.findOneAndUpdate(
       { "credentials.email": email },
-      { "car.image_url": imageUrl },
+      { "car.image": imageUrl },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      statusText: "SUCCESS",
+      message: "Upload and update successful",
+      imageUrl,
+    });
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).json({ message: "Server error during upload" });
+  }
+});
+
+/* update user's profile image*/
+router.post("/updateUserImage", async (req, res) => {
+  try {
+    const { email, imageUrl } = req.body;
+
+    if (!email || !imageUrl) {
+      return res.status(400).json({ message: "Image and email are required" });
+    }
+
+    // Update user's car.image_url
+    const updatedUser = await User.findOneAndUpdate(
+      { "credentials.email": email },
+      { profile_image: imageUrl },
       { new: true }
     );
 

@@ -126,6 +126,35 @@ router.get("/:id", async (req, res) => {
 //   }
 // });
 
+/* update user ratings */
+router.post("/updateRatings", async (req, res) => {
+  try {
+    const id = req.body.id;
+    const newAverageRating = req.body.newAverageRating;
+    const newCount = req.body.newCount;
+
+    const ratings = { average: newAverageRating, count: newCount };
+
+    // Update user's car.image_url
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: id },
+      { ratings: ratings },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      statusText: "SUCCESS",
+      message: "Update successful",
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error saving roles" });
+  }
+});
+
 /* update user roles */
 router.post("/updateRoles", async (req, res) => {
   try {

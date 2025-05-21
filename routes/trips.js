@@ -2,23 +2,64 @@ const express = require("express");
 const router = express.Router();
 const Trip = require("../models/trip");
 
-// // GET /trips - fetch all trips
-// router.get("/", async (req, res) => {
-//   try {
-//     const trips = await Trip.find();
-//     res.json(trips);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// });
+/* update trip status */
+router.post("/updateStatus", async (req, res) => {
+  try {
+    const { id, status } = req.body;
+
+    /* validate fields */
+    if (!id || !status) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const updatedTrip = await Trip.findOneAndUpdate(
+      { _id: id },
+      { article_status: status },
+      { new: true }
+    );
+
+    if (!updatedTrip) {
+      return res.status(404).json({ message: `Trip with id[${id}] not found` });
+    }
+
+    res.status(200).json({
+      statusText: "SUCCESS",
+      message: "Update successful",
+    });
+  } catch (error) {
+    console.error("Error updating trip:", error);
+    res.status(500).json({ message: "Server error while updating trip" });
+  }
+});
+
+// Get all trips where user is either a driver or a participant
+router.get("/fetchData/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const trips = await Trip.find({
+      $or: [{ driver_id: userId }, { taken_seats: userId }],
+    });
+
+    if (!trips || trips.length === 0) {
+      return res.status(404).json({ message: "No trips found for this user" });
+    }
+
+    res.json(trips);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 /* create a trip */
 router.post("/create", async (req, res) => {
   try {
     const {
-      vehicle_image,
-      trip_description,
+      created_on,
       title,
+      trip_description,
+      vehicle_image,
+      car,
       driver_id,
       profile_image,
       start_location,
@@ -45,9 +86,11 @@ router.post("/create", async (req, res) => {
     }
 
     const newTrip = new Trip({
+      created_on,
       vehicle_image,
       trip_description,
       title,
+      car,
       driver_id,
       profile_image,
       start_location,
