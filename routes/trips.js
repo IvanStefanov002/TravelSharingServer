@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Trip = require("../models/trip");
+const User = require("../models/user");
 
 /* update trip status */
 router.post("/updateStatus", async (req, res) => {
@@ -29,6 +30,159 @@ router.post("/updateStatus", async (req, res) => {
   } catch (error) {
     console.error("Error updating trip:", error);
     res.status(500).json({ message: "Server error while updating trip" });
+  }
+});
+
+/* Manually book a trip */
+router.post("/bookManual", async (req, res) => {
+  try {
+    const { tripId, names, email, phone } = req.body;
+
+    /* Validate fields */
+    if (!names || !email || !phone) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    /* Check if user already exists */
+    let existingUser = await User.findOne({ "credentials.email": email });
+
+    let userId;
+
+    if (!existingUser) {
+      /* Create a new user */
+      const newUser = new User({
+        profile_image: "/uploads/unkown.jpeg",
+        name: names,
+        credentials: {
+          email,
+          phone,
+          username: email.split("@")[0] + Math.floor(Math.random() * 10000),
+          password: "manual_booking_password", // You may want to hash this or flag manual accounts separately
+          verified: false,
+        },
+        role: "passenger" /* default role */,
+        trips_count: 0,
+      });
+
+      const savedUser = await newUser.save();
+      userId = savedUser._id;
+    } else {
+      userId = existingUser._id;
+    }
+
+    // Update trip with userId
+    const updatedTrip = await Trip.findOneAndUpdate(
+      { _id: tripId },
+      {
+        $inc: {
+          available_seats: -1,
+          taken_seats_count: 1,
+        },
+        $addToSet: {
+          taken_seats: userId, // Prevent duplicate userIds
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedTrip) {
+      return res
+        .status(404)
+        .json({ message: `Trip with id [${tripId}] not found` });
+    }
+
+    res.status(200).json({
+      statusText: "SUCCESS",
+      message: "Trip booked successfully",
+      userId,
+    });
+  } catch (error) {
+    console.error("Error booking trip manually:", error);
+    res.status(500).json({ message: "Server error while booking trip" });
+  }
+});
+
+/* Book trip */
+router.post("/book", async (req, res) => {
+  try {
+    const { tripId, userId } = req.body;
+
+    // Validate fields
+    if (!tripId || !userId) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Use $inc and $push for atomic updates
+    const updatedTrip = await Trip.findOneAndUpdate(
+      { _id: tripId },
+      {
+        $inc: {
+          available_seats: -1,
+          taken_seats_count: 1,
+        },
+        $addToSet: {
+          taken_seats: userId, // Prevent duplicate userIds
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedTrip) {
+      return res
+        .status(404)
+        .json({ message: `Trip with id [${tripId}] not found` });
+    }
+
+    res.status(200).json({
+      statusText: "SUCCESS",
+      message: "Trip booked successfully",
+      trip: updatedTrip,
+    });
+  } catch (error) {
+    console.error("Error updating trip:", error);
+    res.status(500).json({ message: "Server error while booking trip" });
+  }
+});
+
+/* Cancel booking */
+router.post("/unbook", async (req, res) => {
+  try {
+    const { tripId, userId } = req.body;
+
+    // Validate fields
+    if (!tripId || !userId) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Use $inc and $push for atomic updates
+    const updatedTrip = await Trip.findOneAndUpdate(
+      { _id: tripId },
+      {
+        $inc: {
+          available_seats: 1,
+          taken_seats_count: -1,
+        },
+        $pull: {
+          taken_seats: userId,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedTrip) {
+      return res
+        .status(404)
+        .json({ message: `Trip with id [${tripId}] not found` });
+    }
+
+    res.status(200).json({
+      statusText: "SUCCESS",
+      message: "Trip booked successfully",
+      trip: updatedTrip,
+    });
+  } catch (error) {
+    console.error("Error updating trip:", error);
+    res.status(500).json({ message: "Server error while booking trip" });
   }
 });
 
@@ -73,6 +227,8 @@ router.post("/create", async (req, res) => {
     } = req.body;
 
     // Validate required fields (simple example)
+
+    console.log(`vehicle_image`, vehicle_image);
     if (
       !vehicle_image ||
       !trip_description ||
@@ -82,9 +238,11 @@ router.post("/create", async (req, res) => {
       available_seats === undefined ||
       price_per_seat === undefined
     ) {
+      console.log("missing required fields");
       return res.status(400).json({ message: "Missing required fields" });
     }
 
+    console.log("before new trip");
     const newTrip = new Trip({
       created_on,
       vehicle_image,
@@ -103,6 +261,7 @@ router.post("/create", async (req, res) => {
       is_allowed_smoking: is_allowed_smoking || "any",
     });
 
+    console.log(`newTrip`, newTrip);
     const savedTrip = await newTrip.save();
     res
       .status(201)

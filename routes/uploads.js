@@ -5,6 +5,7 @@ const path = require("path");
 const router = express.Router();
 const User = require("../models/user");
 const Trip = require("../models/trip");
+const mongoose = require("mongoose");
 require("dotenv").config();
 
 // Configure Multer storage
@@ -83,7 +84,8 @@ router.post("/uploadImage", upload.single("image"), async (req, res) => {
       return res.status(400).json({ message: "Image is required" });
     }
 
-    const imageUrl = `${req.protocol}://localhost:${process.env.PORT}/uploads/${req.file.filename}`;
+    //const imageUrl = `${req.protocol}://localhost:${process.env.PORT}/uploads/${req.file.filename}`;
+    const imageUrl = `/uploads/${req.file.filename}`;
 
     /* delete old image as new is already set */
     if (oldImageFileName && oldImageFileName !== "logo.png") {
@@ -117,24 +119,26 @@ router.post("/uploadImage", upload.single("image"), async (req, res) => {
   }
 });
 
-/* update user's car image*/
+/* update user's vehicle image by plate number */
 router.post("/updateUserCarImage", async (req, res) => {
   try {
-    const { email, imageUrl } = req.body;
+    const { plate, email, imageUrl } = req.body;
 
-    if (!email || !imageUrl) {
-      return res.status(400).json({ message: "Image and email are required" });
+    if (!email || !imageUrl || !plate) {
+      return res
+        .status(400)
+        .json({ message: "Email, imageUrl, and vehicle ID are required" });
     }
 
-    // Update user's car.image_url
     const updatedUser = await User.findOneAndUpdate(
-      { "credentials.email": email },
-      { "car.image": imageUrl },
+      { "credentials.email": email, "vehicles.plate": plate },
+      { $set: { "vehicles.$.imageUrl": imageUrl } },
       { new: true }
     );
 
     if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      console.log("User or vehicle not found");
+      return res.status(404).json({ message: "User or vehicle not found" });
     }
 
     res.status(200).json({
@@ -187,7 +191,8 @@ router.post("/updateTrip", async (req, res) => {
     }
 
     //const imageUrl = `${req.protocol}://${req.get("host")}/uploads/$
-    const imageUrl = `${req.protocol}://localhost:${process.env.PORT}/uploads/${req.file.filename}`;
+    //const imageUrl = `${req.protocol}://localhost:${process.env.PORT}/uploads/${req.file.filename}`;
+    const imageUrl = `/uploads/${req.file.filename}`;
 
     // Update user's car.image_url
     const updatedTrip = await User.findOneAndUpdate(
@@ -239,7 +244,8 @@ router.post("/delete/carImage", async (req, res) => {
     });
 
     /* update user */
-    const imageUrl = `${req.protocol}://localhost:${process.env.PORT}/uploads/${process.env.NOIMAGE}`;
+    //const imageUrl = `${req.protocol}://localhost:${process.env.PORT}/uploads/${process.env.NOIMAGE}`;
+    const imageUrl = `/uploads/${process.env.NOIMAGE}`;
 
     const updatedUser = await User.findOneAndUpdate(
       { "credentials.email": email },

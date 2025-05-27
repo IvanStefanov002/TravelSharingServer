@@ -278,7 +278,7 @@ router.post("/fetchVehicleInfo", async (req, res) => {
       message: "Fetch vehicle info successful",
       data: [
         {
-          car: user.car,
+          vehicles: user.vehicles,
           /*age: user.age,*/
           /*role: user.role, */
           ratings: user.ratings,

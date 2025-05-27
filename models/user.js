@@ -11,17 +11,16 @@ const userSchema = new mongoose.Schema({
   },
   dateOfBirth: { type: Date },
   age: { type: Number },
-  car: {
-    make: String,
-    model: String,
-    year: Number,
-    color: String,
-    plate: String,
-    mileage: Number,
-    fuel_type: String,
-    transmission: String,
-    image_url: String,
-  },
+  vehicles: [
+    {
+      imageUrl: String,
+      make: String,
+      model: String,
+      year: Number,
+      color: String,
+      plate: String,
+    },
+  ],
   ratings: {
     average: Number,
     count: Number,
