@@ -24,6 +24,10 @@ const bcrypt = require("bcrypt");
 /* path for static verfication page */
 const path = require("path");
 
+/* for JWT authorization */
+const jwt = require("jsonwebtoken");
+const SECRET_KEY = process.env.JWT_SECRET || "supersecret"; // Ideally stored in .env
+
 /* nodemailer stuff */
 let transporter = nodemailer.createTransport({
   service: "gmail",
@@ -53,6 +57,7 @@ router.get("/", async (req, res) => {
 });
 
 /* get user by email and password */
+/*
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -94,6 +99,57 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+*/
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({
+      "credentials.email": email.trim().toLowerCase(),
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.credentials.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // ✅ Generate JWT
+    const token = jwt.sign(
+      { userId: user._id, roles: user.roles },
+      SECRET_KEY,
+      { expiresIn: "7d" } // adjust as needed
+    );
+
+    // ✅ Send token with user data
+    return res.json({
+      statusCode: 200,
+      statusText: "SUCCESS",
+      message: "Signin successful",
+      token, // include token here
+      data: [
+        {
+          id: user._id,
+          profileImage: user.profile_image,
+          name: user.name,
+          email: user.credentials.email,
+          rating: user.ratings.average,
+          ratingsCount: user.ratings.count,
+          tripsCount: user.trips_count,
+          roles: user.roles,
+        },
+      ],
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+// ======================
 
 /* get user by id */
 router.get("/:id", async (req, res) => {

@@ -3,6 +3,9 @@ const router = express.Router();
 const Trip = require("../models/trip");
 const User = require("../models/user");
 
+/* JWT */
+const verifyToken = require("./../middleware/auth");
+
 /* update trip status */
 router.post("/updateStatus", async (req, res) => {
   try {
@@ -291,9 +294,22 @@ router.get("/", async (req, res) => {
   }
 });
 
+/*
 router.get("/fetchData", async (req, res) => {
   try {
     const trips = await Trip.find(); // You could add filters here
+    res.status(200).json(trips);
+  } catch (error) {
+    console.error("Error fetching trips:", error);
+    res.status(500).json({ message: "Server error fetching trips" });
+  }
+});
+*/
+
+/* fetch Trip data using JWT authorization */
+router.get("/fetchData", verifyToken, async (req, res) => {
+  try {
+    const trips = await Trip.find();
     res.status(200).json(trips);
   } catch (error) {
     console.error("Error fetching trips:", error);

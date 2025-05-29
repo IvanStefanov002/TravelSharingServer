@@ -119,3 +119,15 @@ Content-Type: application/json
 {
 
 }
+
+###
+
+// JWT TEST - invalid token
+GET http://localhost:3000/trips/fetchData
+Authorization: Bearer invalidTokenASD
+
+###
+
+// JWT TEST - valid token
+GET http://localhost:3000/trips/fetchData
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2VlZDZjOGFjMzY1NTFiNTYwZGY4MjIiLCJyb2xlcyI6WyJwYXNzZW5nZXIiXSwiaWF0IjoxNzQ4NTAyNjUzLCJleHAiOjE3NDkxMDc0NTN9.bmzXmaagV1_XnlcIGltb6VUBT5-QKcIz6QlU4i_uBHY
