@@ -19,8 +19,8 @@ app.use(express.json());
 /* set our routes i.e. which collections you'll use */
 
 /* payments */
-const paymentsRouter = require("./routes/payments");
-app.use("/payments", paymentsRouter);
+// const paymentsRouter = require("./routes/payments");
+// app.use("/payments", paymentsRouter);
 
 /* trips */
 const tripsRouter = require("./routes/trips");
@@ -31,14 +31,14 @@ const usersRouter = require("./routes/users");
 app.use("/users", usersRouter);
 
 /* vehicles */
-const vehiclesRouter = require("./routes/vehicles");
-app.use("/vehicles", vehiclesRouter);
+// const vehiclesRouter = require("./routes/vehicles");
+// app.use("/vehicles", vehiclesRouter);
 
 /* for image uploads */
 const uploadsRouter = require("./routes/uploads");
 app.use("/upload", uploadsRouter);
 
-// Serve static files from 'uploads' folder
+/* Serve static files from 'uploads' folder */
 app.use("/uploads", express.static("uploads"));
 /* end for image uploads */
 

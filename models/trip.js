@@ -14,7 +14,7 @@ const tripSchema = new mongoose.Schema({
     plate: String,
   },
   driver_id: { type: String, required: true },
-  profile_image: { type: String },
+  profile_image: { type: String }, // ??????????????????????
   start_location: {
     city: { type: String, required: true },
     address: { type: String },

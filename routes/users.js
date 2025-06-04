@@ -119,14 +119,14 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // ✅ Generate JWT
+    // Generate JWT
     const token = jwt.sign(
       { userId: user._id, roles: user.roles },
       SECRET_KEY,
       { expiresIn: "7d" } // adjust as needed
     );
 
-    // ✅ Send token with user data
+    // Send token with user data
     return res.json({
       statusCode: 200,
       statusText: "SUCCESS",
@@ -165,6 +165,84 @@ router.get("/:id", async (req, res) => {
     res.json(userObj);
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+/* add vehicle to user profile */
+router.post("/addVehicle", async (req, res) => {
+  const { email, vehicle } = req.body;
+
+  if (!email || !vehicle) {
+    return res.status(400).json({
+      statusText: "FAILED",
+      message: "Missing email or vehicle.",
+    });
+  }
+
+  try {
+    /* $push appends the new vehicle to the vehicles array. */
+    const updatedUser = await User.findOneAndUpdate(
+      { "credentials.email": email },
+      { $push: { vehicles: vehicle } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json({
+      statusText: "SUCCESS",
+      message: "User vehicle added successfully.",
+      vehicles: updatedUser.vehicles, // optional: return updated list
+    });
+  } catch (err) {
+    console.error("Error updating user's vehicles:", err);
+    return res.status(500).json({
+      statusText: "FAILED",
+      message: "Server error while updating user vehicles.",
+    });
+  }
+});
+
+/* remove vehicle from user profile */
+router.post("/removeVehicle", async (req, res) => {
+  const { email, plate } = req.body;
+
+  if (!email || !plate) {
+    return res.status(400).json({
+      statusText: "FAILED",
+      message: "Missing email or plate.",
+    });
+  }
+
+  try {
+    const updatedUser = await User.findOneAndUpdate(
+      { "credentials.email": email },
+      {
+        $pull: { vehicles: { plate } },
+      } /* $pull removes vehicle with matching plate */,
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        statusText: "FAILED",
+        message: "User not found",
+      });
+    }
+
+    return res.json({
+      statusText: "SUCCESS",
+      message: "User vehicle removed successfully.",
+      vehicles: updatedUser.vehicles,
+    });
+  } catch (err) {
+    console.error("Error removing user's vehicle:", err);
+    return res.status(500).json({
+      statusText: "FAILED",
+      message: "Server error while removing vehicle.",
+    });
   }
 });
 
@@ -398,7 +476,7 @@ router.post("/", async (req, res) => {
     age: req.body.age,
     credentials: {
       email: req.body.email,
-      username: req.body.username,
+      //username: req.body.username,
       password: hashedPassword,
     },
     car: req.body.car,
@@ -421,18 +499,25 @@ const currentUrl = getCurrentUrl();
 
 /* Signup */
 router.post("/signup", (req, res) => {
-  let { name, email, password, dateOfBirth } = req.body;
+  let { name, email, password, phone, dateOfBirth } = req.body;
   name = name.trim();
   email = email.trim().toLowerCase();
   password = password.trim();
+  phone = phone.trim();
   dateOfBirth = dateOfBirth.trim();
 
-  if (name == "" || email == "" || password == "" || dateOfBirth == "") {
+  if (
+    name == "" ||
+    email == "" ||
+    password == "" ||
+    phone == "" ||
+    dateOfBirth == ""
+  ) {
     res.json({
       statusText: "FAILED",
       message: "Empty input fields!",
     });
-  } else if (!/^[a-zA-Z]*$/.test(name)) {
+  } else if (!/^[a-zA-Z\s]+$/.test(name)) {
     res.json({
       statusText: "FAILED",
       message: "Invalid name entered",
@@ -474,22 +559,22 @@ router.post("/signup", (req, res) => {
                 dateOfBirth: dateOfBirth,
                 credentials: {
                   email: email,
-                  username: name,
+                  //username: name.toLowerCase().replace(/\s+/g, ""), // optional username rule
                   password: hashedPassword,
+                  phone: phone,
                   verified: false,
-                  //password: hashedPassword,
                 },
+                // profile_image: "/uploads/no_image.jpeg",
+                // roles: ["passenger"], // default role, or include "driver" too if needed
+                // ratings: {
+                //   average: 0,
+                //   count: 0,
+                // },
+                //driving_experience_in_years: 0,
+                //vehicles: [], // empty array initially
+                //age: null, // or calculate from dateOfBirth if needed
               });
 
-              // const newUser = new User({
-              //   name,
-              //   email,
-              //   password: hashedPassword,
-              //   dateOfBirth,
-              //   varified: false,
-              // });
-
-              //const newUser = await user.save();
               newUser
                 .save()
                 .then((result) => {

@@ -21,61 +21,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// router.post("/image/createTrip", upload.single("image"), async (req, res) => {
-//   try {
-//     const oldImageFileName = req.body.oldImage;
-//     const email = req.body.email;
-//     if (!req.file || !email) {
-//       return res.status(400).json({ message: "Image and email are required" });
-//     }
-
-//     //const imageUrl = `${req.protocol}://${req.get("host")}/uploads/$
-//     const imageUrl = `${req.protocol}://localhost:${process.env.PORT}/uploads/${req.file.filename}`;
-
-//     // Update user's car.image_url
-//     const updatedTrip = await User.findOneAndUpdate(
-//       { "credentials.email": email },
-//       { "car.image_url": imageUrl },
-//       { new: true }
-//     );
-
-//     if (!updatedTrip) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     /* delete old image as new is already set */
-//     if (oldImageFileName && oldImageFileName !== "logo.png") {
-//       const oldImagePath = path.join(
-//         __dirname,
-//         "..",
-//         "uploads",
-//         oldImageFileName
-//       );
-//       fs.access(oldImagePath, fs.constants.F_OK, (err) => {
-//         if (!err) {
-//           fs.unlink(oldImagePath, (err) => {
-//             if (err) {
-//               console.error("Failed to delete old image:", err);
-//             } else {
-//               console.log("Old image deleted:", oldImageFileName);
-//             }
-//           });
-//         }
-//       });
-//     }
-
-//     res.status(200).json({
-//       statusText: "SUCCESS",
-//       message: "Upload and update successful",
-//       imageUrl,
-//     });
-//   } catch (error) {
-//     console.error("Upload error:", error);
-//     res.status(500).json({ message: "Server error during upload" });
-//   }
-// });
-
-// POST route to handle image upload and update user.car.image_url
+/* POST route to handle image upload and update user.car.image_url */
 router.post("/uploadImage", upload.single("image"), async (req, res) => {
   try {
     const oldImageFileName = req.body.oldImage;
@@ -183,6 +129,7 @@ router.post("/updateUserImage", async (req, res) => {
   }
 });
 
+/* update trip vehicle image */
 router.post("/updateTrip", async (req, res) => {
   try {
     const tripId = req.body.trip_id;
@@ -190,8 +137,6 @@ router.post("/updateTrip", async (req, res) => {
       return res.status(400).json({ message: "trip id is required" });
     }
 
-    //const imageUrl = `${req.protocol}://${req.get("host")}/uploads/$
-    //const imageUrl = `${req.protocol}://localhost:${process.env.PORT}/uploads/${req.file.filename}`;
     const imageUrl = `/uploads/${req.file.filename}`;
 
     // Update user's car.image_url
@@ -216,9 +161,9 @@ router.post("/updateTrip", async (req, res) => {
   }
 });
 
-/* deleting car image */
+/* deleting car image from user's profile */
 router.post("/delete/carImage", async (req, res) => {
-  const { email, image } = req.body;
+  const { email, image, plate } = req.body;
 
   if (!email || !image) {
     return res.status(400).json({
@@ -244,12 +189,11 @@ router.post("/delete/carImage", async (req, res) => {
     });
 
     /* update user */
-    //const imageUrl = `${req.protocol}://localhost:${process.env.PORT}/uploads/${process.env.NOIMAGE}`;
     const imageUrl = `/uploads/${process.env.NOIMAGE}`;
 
     const updatedUser = await User.findOneAndUpdate(
-      { "credentials.email": email },
-      { "car.image_url": imageUrl },
+      { "credentials.email": email, "vehicles.plate": plate },
+      { $set: { "vehicles.$.imageUrl": imageUrl } },
       { new: true }
     );
 
@@ -277,6 +221,7 @@ router.post("/delete/carImage", async (req, res) => {
   }
 });
 
+/* used to delete desired image from the server */
 router.post("/deleteImage", async (req, res) => {
   const { image } = req.body;
 

@@ -59,7 +59,7 @@ router.post("/bookManual", async (req, res) => {
         credentials: {
           email,
           phone,
-          username: email.split("@")[0] + Math.floor(Math.random() * 10000),
+          //username: email.split("@")[0] + Math.floor(Math.random() * 10000),
           password: "manual_booking_password", // You may want to hash this or flag manual accounts separately
           verified: false,
         },
