@@ -549,7 +549,6 @@ router.post("/signup", (req, res) => {
           });
         } else {
           /* try to create new user */
-
           const saltRounds = 10;
           bcrypt
             .hash(password, saltRounds)
@@ -559,27 +558,16 @@ router.post("/signup", (req, res) => {
                 dateOfBirth: dateOfBirth,
                 credentials: {
                   email: email,
-                  //username: name.toLowerCase().replace(/\s+/g, ""), // optional username rule
                   password: hashedPassword,
                   phone: phone,
                   verified: false,
                 },
-                // profile_image: "/uploads/no_image.jpeg",
-                // roles: ["passenger"], // default role, or include "driver" too if needed
-                // ratings: {
-                //   average: 0,
-                //   count: 0,
-                // },
-                //driving_experience_in_years: 0,
-                //vehicles: [], // empty array initially
-                //age: null, // or calculate from dateOfBirth if needed
               });
 
               newUser
                 .save()
                 .then((result) => {
                   /* Handle account verification */
-                  //sendVerificationEmail(result, res);
                   sendVerificationEmail(
                     { _id: result._id, email: result.credentials.email },
                     res

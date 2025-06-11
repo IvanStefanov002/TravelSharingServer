@@ -22,6 +22,10 @@ app.use(express.json());
 // const paymentsRouter = require("./routes/payments");
 // app.use("/payments", paymentsRouter);
 
+/* configurations */
+const configurationsRouter = require("./routes/configurations");
+app.use("/configurations", configurationsRouter);
+
 /* trips */
 const tripsRouter = require("./routes/trips");
 app.use("/trips", tripsRouter);
