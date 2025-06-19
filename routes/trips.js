@@ -198,9 +198,9 @@ router.get("/fetchData/:id", async (req, res) => {
       $or: [{ driver_id: userId }, { taken_seats: userId }],
     });
 
-    if (!trips || trips.length === 0) {
-      return res.status(404).json({ message: "No trips found for this user" });
-    }
+    // if (!trips || trips.length === 0) {
+    //   return res.status(404).json({ message: "No trips found for this user" });
+    // }
 
     res.json(trips);
   } catch (err) {

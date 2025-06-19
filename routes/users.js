@@ -110,13 +110,13 @@ router.post("/login", async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "Потребителят не е намерен" });
     }
 
     const isMatch = await bcrypt.compare(password, user.credentials.password);
 
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: "Невалидни данни" });
     }
 
     // Generate JWT
@@ -387,7 +387,7 @@ router.post("/changePassword", async (req, res) => {
         message: "Password update successful",
       });
     } else {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: "Невалидни данни" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -418,6 +418,42 @@ router.post("/fetchVehicleInfo", async (req, res) => {
           ratings: user.ratings,
         },
       ],
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.post("/fetchVehicleInfoByPlate", async (req, res) => {
+  try {
+    const { email, plate } = req.body;
+
+    // Find user by email
+    const user = await User.findOne({ "credentials.email": email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Find the specific vehicle by plate
+    const vehicle = user.vehicles.find(
+      (v) => v.plate?.toLowerCase() === plate.toLowerCase()
+    );
+
+    if (!vehicle) {
+      return res
+        .status(404)
+        .json({ message: "Vehicle not found for this plate" });
+    }
+
+    return res.json({
+      statusCode: 200,
+      statusText: "SUCCESS",
+      message: "Fetch vehicle info successful",
+      data: {
+        vehicle,
+        ratings: user.ratings,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -515,27 +551,27 @@ router.post("/signup", (req, res) => {
   ) {
     res.json({
       statusText: "FAILED",
-      message: "Empty input fields!",
+      message: "Празни полета!",
     });
   } else if (!/^[a-zA-Z\s]+$/.test(name)) {
     res.json({
       statusText: "FAILED",
-      message: "Invalid name entered",
+      message: "Въведено е невалидно име",
     });
   } else if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
     res.json({
       statusText: "FAILED",
-      message: "Invalid email entered",
+      message: "Въведен е невалиден имейл",
     });
   } else if (!new Date(dateOfBirth).getTime()) {
     res.json({
       statusText: "FAILED",
-      message: "Invalid date of birth entered",
+      message: "Въведена е невалидна рожденна дата",
     });
   } else if (password.length < 8) {
     res.json({
       statusText: "FAILED",
-      message: "Password is too short!",
+      message: "Въведената парола е твърде кратка",
     });
   } else {
     /* checking if user already exists */
@@ -545,7 +581,7 @@ router.post("/signup", (req, res) => {
           /* A user already exists */
           res.json({
             statusText: "FAILED",
-            message: "User with the provided email already exists",
+            message: "Потребител с този имейл адрес вече съществува",
           });
         } else {
           /* try to create new user */
