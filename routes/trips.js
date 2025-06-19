@@ -54,13 +54,13 @@ router.post("/bookManual", async (req, res) => {
     if (!existingUser) {
       /* Create a new user */
       const newUser = new User({
-        profile_image: "/uploads/unkown.jpeg",
+        profile_image: "/uploads/unknown.jpg",
         name: names,
         credentials: {
           email,
           phone,
           //username: email.split("@")[0] + Math.floor(Math.random() * 10000),
-          password: "manual_booking_password", // You may want to hash this or flag manual accounts separately
+          password: "manual_booking_password",
           verified: false,
         },
         role: "passenger" /* default role */,
